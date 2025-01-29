@@ -6,11 +6,11 @@ import os
 import time
 from pinecone import ServerlessSpec
 
-cohere_api_key = '5mK0XWftP6v981VW3OyJt7BFBmzN32ANQbVa2Bzm'
-pinecone_api_key = 'pcsk_62HXGm_PNxvQc1J3oknfFF5XqGe77Cvw23SCB4Ud8Bm2DBKUSWV1ZJnC9WdNkgnwVmrSXd'
+cohere_api_key = 'your cohere api key'
+pinecone_api_key = 'your pinecone api key'
 
-index_name = "python-virtual-assitant"
-namespace = "hammad's_namespace" 
+index_name = "personal-virtual-assitant"
+namespace = "your_namespace" 
 dimension = 4096
 metric = "cosine"
 
