@@ -1,7 +1,6 @@
 # MindMate - Personal Virtual Assistant Chatbot
 
-MindMate is an AI-powered personal virtual assistant chatbot built using Python, 
-it is designed to help users retrieve information from the documents they upload.
+MindMate is an AI-powered personal virtual assistant chatbot built using Python, it is designed to help users retrieve information from the documents they upload.
 It integrates with a react built web-based frontend for interactive communication.
 
 ## Technologies Used
@@ -48,4 +47,6 @@ It integrates with a react built web-based frontend for interactive communicatio
    ```bash
    npm start
    ```
+## Usage
+After setting up the project, you can interact with the virtual assistant through the web interface. The assistant can help with a variety of tasks, such as answering questions and managing documents.
 
