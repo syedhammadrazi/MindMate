@@ -10,11 +10,7 @@ cohere_api_key = 'your cohere api key'
 pinecone_api_key = 'your pinecone api key'
 
 index_name = "personal-virtual-assitant"
-<<<<<<< HEAD
-namespace = "hammad's_namespace" 
-=======
 namespace = "your_namespace" 
->>>>>>> c539dbb1f9fb596003bd1f44c859ce8615940aec
 dimension = 4096
 metric = "cosine"
 
