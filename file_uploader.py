@@ -98,7 +98,7 @@ def query():
 
     try:
         # Query Pinecone
-        results = index.query(vector=query_embedding, namespace="hammad's_namespace", top_k=10, include_metadata=True)
+        results = index.query(vector=query_embedding, namespace="your_namespace", top_k=10, include_metadata=True)
 
         similarity_threshold = 0.5
 
