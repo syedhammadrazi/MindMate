@@ -12,3 +12,13 @@ It integrates with a react built web-based frontend for interactive communicatio
 - Cohere (for NLP)
 - Pinecone (for vector storage)
 
+## Features
+- Real-time chat with the virtual assistant
+- Document uploads with vector search for content retrieval
+- Retrieval-Augmented Generation (RAG) workflow for generating responses
+- User-friendly interface with a dynamic chat window
+- Able to scroll through the uploaded files and be able to download them
+- Ask your queries using by voice or typing
+- Text to speech available
+
+
