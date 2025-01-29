@@ -21,4 +21,31 @@ It integrates with a react built web-based frontend for interactive communicatio
 - Ask your queries using by voice or typing
 - Text to speech available
 
+## Installation Instructions
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/MindMate.git
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd MindMate
+   ```
+3. Install dependencies:
+   - For the backend (Python):
+     ```bash
+     pip install -r requirements.txt
+     ```
+   - For the frontend (React.js):
+     ```bash
+     cd chatbot-frontend
+     npm install
+     ```
+4. Start the backend server:
+   ```bash
+   python app.py
+   ```
+5. Start the frontend server:
+   ```bash
+   npm start
+   ```
 
