@@ -2,6 +2,7 @@ import fitz  # PyMuPDF for PDF text extraction
 from docx import Document
 from PIL import Image, ImageEnhance, ImageFilter
 import pytesseract
+# add the filepath to your tesseract.exe
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 def extract_text_from_pdf(file_path):
