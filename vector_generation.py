@@ -4,8 +4,8 @@ import numpy as np
 import time
 from pinecone import ServerlessSpec
 
-cohere_api_key = 'Q1Km1TCqzOJUCH2lE3giiXyQewDy90RFjaMxnFU2'
-pinecone_api_key = 'pcsk_5qDi5N_ToyTVkpXZLWsck9s7hv4eNjijcQJMmhb5P2uDAvFkKP5ECbVCWy3MnSKTQfXz35'
+cohere_api_key = 'your api key here'
+pinecone_api_key = 'your api key here'
 
 index_name = "personal-virtual-assitant"
 namespace = "your_namespace" 
