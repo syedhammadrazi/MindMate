@@ -1,13 +1,11 @@
-from flask import Flask, json, request, jsonify
 import pinecone
 import cohere
 import numpy as np
-import os
 import time
 from pinecone import ServerlessSpec
 
-cohere_api_key = 'your cohere api key'
-pinecone_api_key = 'your pinecone api key'
+cohere_api_key = 'Q1Km1TCqzOJUCH2lE3giiXyQewDy90RFjaMxnFU2'
+pinecone_api_key = 'pcsk_5qDi5N_ToyTVkpXZLWsck9s7hv4eNjijcQJMmhb5P2uDAvFkKP5ECbVCWy3MnSKTQfXz35'
 
 index_name = "personal-virtual-assitant"
 namespace = "your_namespace" 

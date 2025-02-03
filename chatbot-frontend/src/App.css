@@ -133,26 +133,29 @@ h1, h2, h3, h4, h5, h6, p, span, div, input, button {
 
 /* Input Area */
 .input-area {
-  display: flex; /* Aligns input and button horizontally */
-  align-items: center; /* Vertically aligns input and button */
-  gap: 10px; /* Adds space between the input and button */
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-top: 10px;
-  width: 100%; /* Ensures the container spans full width */
-  box-sizing: border-box; /* Includes padding and border in width calculations */
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: wrap; /* Allows buttons to wrap on smaller screens */
+  justify-content: space-between; /* Distributes space evenly between input and buttons */
 }
 
 .input-area input {
-  flex-grow: 1; /* Makes the input take up remaining horizontal space */
+  flex: 1; /* Takes up remaining horizontal space */
   padding: 12px;
   font-size: 16px;
   border-radius: 5px;
   border: 1px solid #555;
   background-color: #333;
   color: #f4f7fb;
-  outline: none; /* Removes outline on focus */
-  box-sizing: border-box; /* Prevents overflow due to padding */
+  outline: none;
+  box-sizing: border-box;
 }
 
+/* Buttons */
 .input-area button {
   padding: 12px 18px;
   font-size: 16px;
@@ -161,11 +164,27 @@ h1, h2, h3, h4, h5, h6, p, span, div, input, button {
   color: white;
   border-radius: 5px;
   cursor: pointer;
-  flex-shrink: 0; /* Prevents the button from shrinking */
+  flex-shrink: 0; /* Prevents buttons from shrinking */
 }
 
 .input-area button:hover {
   background-color: #45a049;
+}
+
+/* Mobile Specific Styles */
+@media (max-width: 600px) {
+  .input-area {
+    flex-direction: column; /* Stacks the input and buttons vertically on mobile */
+    gap: 10px;
+  }
+
+  .input-area input {
+    width: 100%; /* Ensures the input takes full width on mobile */
+  }
+
+  .input-area button {
+    width: 100%; /* Makes buttons take full width on mobile */
+  }
 }
 
 /* Loading Dots Animation */

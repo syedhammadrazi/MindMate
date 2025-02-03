@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5000"; // Replace with your backend URL
+const API_BASE_URL = "http://192.168.4.166:5000"; // Replace with your backend URL
 
 export const sendQuery = async (query) => {
   try {

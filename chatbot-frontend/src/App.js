@@ -100,28 +100,47 @@ function App() {
   };
 
   const startListening = () => {
-    const recognition = new (window.SpeechRecognition ||
-      window.webkitSpeechRecognition)();
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  
+    // Check if SpeechRecognition is supported
+    if (!SpeechRecognition) {
+      console.log("SpeechRecognition is not supported on this browser.");
+      return; // Exit if SpeechRecognition is not supported
+    }
+  
+    const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-
+  
     recognition.onstart = () => setIsListening(true);
     recognition.onend = () => setIsListening(false);
     recognition.onerror = (event) => console.error("SpeechRecognition error:", event);
-
+  
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setInput(transcript);
     };
-
+  
     recognition.start();
-  };
+  };  
 
   const speakText = (text) => {
-    if (!ttsEnabled) return; // Speak only if TTS is enabled
+    if (!ttsEnabled) return;
+  
     const synth = window.speechSynthesis;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "en-US";
-    synth.speak(utterance);
+    
+    function speak() {
+      let voices = synth.getVoices();
+      utterance.voice = voices.find(v => v.lang === "en-US") || voices[0];
+      synth.speak(utterance);
+    }
+  
+    if (synth.getVoices().length > 0) {
+      speak();
+    } else {
+      synth.onvoiceschanged = speak;
+    }
   };
 
   return (
@@ -175,7 +194,7 @@ function App() {
         >
           Send
         </button>
-        <button onClick={startListening}>
+        <button onClick={startListening} onTouchStart={startListening}>
           {isListening ? "Listening..." : "Speak"}
         </button>
       </div>

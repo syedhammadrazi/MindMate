@@ -1,8 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
 import os
-import json
-import logging
-from datetime import datetime
 from document_processing import extract_text_from_pdf, extract_text_from_docx, extract_text_from_jpeg, break_text_into_chunks
 from vector_generation import upsert_to_database, get_embedding, index, llm
 import numpy as np
