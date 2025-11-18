@@ -1,62 +1,87 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
-import { sendQuery, uploadFile, getUploadedFiles, downloadFile } from "./api";
+import {
+  sendQuery,
+  uploadFile,
+  getUploadedFiles,
+  downloadFile,
+} from "./api";
 
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [files, setFiles] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [ttsEnabled, setTtsEnabled] = useState(false); // State to toggle TTS
+  const [ttsEnabled, setTtsEnabled] = useState(false);
 
+  // ---------------------------------------------------------------------------
+  // Initial load: fetch uploaded files
+  // ---------------------------------------------------------------------------
   useEffect(() => {
     const fetchFiles = async () => {
       try {
         const data = await getUploadedFiles();
         setUploadedFiles(data || []);
-      } catch (error) {
-        console.error("Error fetching uploaded files:", error);
+      } catch (err) {
+        console.error("Error fetching uploaded files:", err);
       }
     };
+
     fetchFiles();
   }, []);
 
+  // ---------------------------------------------------------------------------
+  // Chat / query handling
+  // ---------------------------------------------------------------------------
   const handleSend = async (message) => {
-    if (!message.trim()) return;
+    const trimmed = message.trim();
+    if (!trimmed) return;
 
-    setMessages([...messages, { sender: "user", text: message }]);
-    setInput(""); // Clear input immediately
+    setMessages((prev) => [...prev, { sender: "user", text: trimmed }]);
+    setInput("");
     setLoading(true);
 
     try {
-      const data = await sendQuery(message);
+      const data = await sendQuery(trimmed);
       const botMessage = data.answer || "No response found.";
       setMessages((prev) => [...prev, { sender: "bot", text: botMessage }]);
-      speakText(botMessage); // Voice output
-    } catch (error) {
-      const errorMessage = "Error: Unable to fetch response.";
-      setMessages((prev) => [...prev, { sender: "bot", text: errorMessage }]);
-      speakText(errorMessage); // Voice output
+      speakText(botMessage);
+    } catch (err) {
+      const errorText = "Error: Unable to fetch response.";
+      setMessages((prev) => [...prev, { sender: "bot", text: errorText }]);
+      speakText(errorText);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
+  const handleInputKeyDown = (e) => {
+    if (e.key !== "Enter") return;
+    const current = input.trim();
+    if (current) handleSend(current);
+  };
+
+  // ---------------------------------------------------------------------------
+  // File upload / selection / download
+  // ---------------------------------------------------------------------------
   const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    if (selectedFiles.length + files.length > 5) {
+    const selected = Array.from(e.target.files || []);
+    if (!selected.length) return;
+
+    if (selected.length + files.length > 5) {
       alert("You can only upload up to 5 files at a time.");
       return;
     }
-    setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+
+    setFiles((prev) => [...prev, ...selected]);
   };
 
   const handleFileUpload = async () => {
-    if (files.length === 0) {
+    if (!files.length) {
       alert("Please select files first!");
       return;
     }
@@ -67,19 +92,24 @@ function App() {
       const data = await uploadFile(files);
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: data.message || "Files uploaded successfully." },
+        {
+          sender: "bot",
+          text: data.message || "Files uploaded successfully.",
+        },
       ]);
       setFiles([]);
-      const updatedFiles = await getUploadedFiles();
-      setUploadedFiles(updatedFiles || []);
-    } catch (error) {
+
+      const updated = await getUploadedFiles();
+      setUploadedFiles(updated || []);
+    } catch (err) {
+      console.error("Error uploading files:", err);
       setMessages((prev) => [
         ...prev,
         { sender: "bot", text: "Error uploading files." },
       ]);
+    } finally {
+      setUploading(false);
     }
-
-    setUploading(false);
   };
 
   const handleFileSelection = (e) => {
@@ -94,48 +124,59 @@ function App() {
 
     try {
       await downloadFile(selectedFile);
-    } catch (error) {
+    } catch (err) {
+      console.error("Error downloading file:", err);
       alert("Error downloading the file.");
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // Speech recognition (STT)
+  // ---------------------------------------------------------------------------
   const startListening = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-  
-    // Check if SpeechRecognition is supported
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
     if (!SpeechRecognition) {
-      console.log("SpeechRecognition is not supported on this browser.");
-      return; // Exit if SpeechRecognition is not supported
+      console.log("SpeechRecognition is not supported in this browser.");
+      return;
     }
-  
+
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-  
+
     recognition.onstart = () => setIsListening(true);
     recognition.onend = () => setIsListening(false);
-    recognition.onerror = (event) => console.error("SpeechRecognition error:", event);
-  
+    recognition.onerror = (event) =>
+      console.error("SpeechRecognition error:", event);
+
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setInput(transcript);
     };
-  
-    recognition.start();
-  };  
 
+    recognition.start();
+  };
+
+  // ---------------------------------------------------------------------------
+  // Text-to-speech (TTS)
+  // ---------------------------------------------------------------------------
   const speakText = (text) => {
-    if (!ttsEnabled) return;
-  
+    if (!ttsEnabled || !text) return;
+
     const synth = window.speechSynthesis;
+    if (!synth) return;
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "en-US";
-    
-    function speak() {
-      let voices = synth.getVoices();
-      utterance.voice = voices.find(v => v.lang === "en-US") || voices[0];
+
+    const speak = () => {
+      const voices = synth.getVoices();
+      utterance.voice =
+        voices.find((v) => v.lang === "en-US") || voices[0] || null;
       synth.speak(utterance);
-    }
-  
+    };
+
     if (synth.getVoices().length > 0) {
       speak();
     } else {
@@ -143,9 +184,13 @@ function App() {
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
   return (
     <div className="chat-container">
-      <div className="stripe"></div>
+      <div className="stripe" />
+
       <div className="navbar">
         <h1>MindMate</h1>
         <button
@@ -155,15 +200,17 @@ function App() {
           {ttsEnabled ? "Disable TTS" : "Enable TTS"}
         </button>
       </div>
+
       <div className="chat-window">
-        {messages.map((msg, index) => (
+        {messages.map((msg, idx) => (
           <div
-            key={index}
+            key={idx}
             className={`message ${msg.sender === "bot" ? "bot" : "user"}`}
           >
             {msg.text}
           </div>
         ))}
+
         {loading && (
           <div className="loading-dots">
             <span>.</span>
@@ -171,25 +218,22 @@ function App() {
             <span>.</span>
           </div>
         )}
-        {uploading && <div className="spinner"></div>}
+
+        {uploading && <div className="spinner" />}
       </div>
+
       <div className="input-area">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              const currentInput = input.trim();
-              if (currentInput) handleSend(currentInput);
-            }
-          }}
+          onKeyDown={handleInputKeyDown}
           placeholder="Type your message..."
         />
         <button
           onClick={() => {
-            const currentInput = input.trim();
-            if (currentInput) handleSend(currentInput);
+            const current = input.trim();
+            if (current) handleSend(current);
           }}
         >
           Send
@@ -198,22 +242,28 @@ function App() {
           {isListening ? "Listening..." : "Speak"}
         </button>
       </div>
+
       <div className="file-upload">
         <input type="file" multiple onChange={handleFileChange} />
         <button onClick={handleFileUpload} disabled={uploading}>
           {uploading ? "Uploading..." : "Upload Files"}
         </button>
+
         <div className="file-preview">
           {files.length > 0 && (
             <>
               <span>Selected Files:</span>
               <ul>
-                {files.map((file, index) => (
-                  <li key={index}>
+                {files.map((file, idx) => (
+                  <li key={`${file.name}-${idx}`}>
                     <span>{file.name}</span>
                     <span
                       className="remove-file"
-                      onClick={() => setFiles(files.filter((f) => f !== file))}
+                      onClick={() =>
+                        setFiles((prev) =>
+                          prev.filter((f) => f !== file)
+                        )
+                      }
                     >
                       Remove
                     </span>
@@ -230,8 +280,8 @@ function App() {
         <select value={selectedFile} onChange={handleFileSelection}>
           <option value="">Select a file</option>
           {uploadedFiles.length > 0 ? (
-            uploadedFiles.map((file, index) => (
-              <option key={index} value={file}>
+            uploadedFiles.map((file, idx) => (
+              <option key={`${file}-${idx}`} value={file}>
                 {file}
               </option>
             ))
@@ -239,11 +289,13 @@ function App() {
             <option disabled>No files available</option>
           )}
         </select>
+
         {selectedFile && (
           <p>
             <strong>Selected File:</strong> {selectedFile}
           </p>
         )}
+
         <button onClick={handleFileDownload} disabled={!selectedFile}>
           Download Selected File
         </button>
