@@ -1,54 +1,69 @@
-import pinecone
+import time
+from typing import List
+
 import cohere
 import numpy as np
-import time
+import pinecone
 from pinecone import ServerlessSpec
 
-cohere_api_key = 'your api key here'
-pinecone_api_key = 'your api key here'
+# --- Config -------------------------------------------------------------------
 
-index_name = "personal-virtual-assitant"
-namespace = "your_namespace" 
-dimension = 4096
-metric = "cosine"
+COHERE_API_KEY = "your_cohere_api_key"
+PINECONE_API_KEY = "your_pinecone_api_key"
 
-llm = cohere.Client(cohere_api_key)
-database = pinecone.Pinecone(api_key = pinecone_api_key)
+INDEX_NAME = "personal-virtual-assistant"
+NAMESPACE = "your_namespace"
+EMBEDDING_DIM = 4096
+METRIC = "cosine"
 
-# Define the spec for the index
+# --- Clients ------------------------------------------------------------------
+
+co = cohere.Client(COHERE_API_KEY)
+pc = pinecone.Pinecone(api_key=PINECONE_API_KEY)
+
 spec = ServerlessSpec(
-    cloud='aws',
-    region='us-east-1'
+    cloud="aws",
+    region="us-east-1",
 )
 
-if index_name not in database.list_indexes().names():
-    # Create the index only if it doesn't already exist
-    database.create_index(
-        name=index_name,
-        dimension=dimension,
-        metric=metric,
-        spec=spec
+# Create index if needed
+if INDEX_NAME not in pc.list_indexes().names():
+    pc.create_index(
+        name=INDEX_NAME,
+        dimension=EMBEDDING_DIM,
+        metric=METRIC,
+        spec=spec,
     )
-# Access the existing index
-index = database.Index(index_name)
 
-time.sleep(5)
+index = pc.Index(INDEX_NAME)
 
-# Generates the embedding for the user query from the llm
-def get_embedding(text):
-    response = llm.embed(texts=[text])
-    embedding = response.embeddings[0]
-    return embedding
 
-# Function to upsert the document chunks to Pinecone
-def upsert_to_database(chunks, file_name, file_path):
-    ids = [str(i) for i in range(len(chunks))]
+# --- Embeddings ---------------------------------------------------------------
+
+def get_embedding(text: str) -> List[float]:
+    """Return a Cohere embedding for the given text."""
+    resp = co.embed(texts=[text])
+    return resp.embeddings[0]
+
+
+# --- Upsert helper ------------------------------------------------------------
+
+def upsert_chunks(chunks: List[str], file_name: str, file_path: str) -> None:
+    """Upsert text chunks to Pinecone with basic file metadata."""
+    now = time.time()
     vectors = [
-        (ids[i], np.array(get_embedding(chunk)).tolist(), {"text": chunk, "file_name": file_name,
-        "file_path": file_path, "upload_time": time.time()})
+        (
+            str(i),
+            np.array(get_embedding(chunk)).tolist(),
+            {
+                "text": chunk,
+                "file_name": file_name,
+                "file_path": file_path,
+                "upload_time": now,
+            },
+        )
         for i, chunk in enumerate(chunks)
     ]
-    # Upsert the vectors with metadata into Pinecone
-    upserted = index.upsert(vectors=vectors, namespace=namespace)
-    print(f"Upserted: {upserted}")
-    time.sleep(5)  # Wait for 5 seconds to ensure upsert completion
+
+    result = index.upsert(vectors=vectors, namespace=NAMESPACE)
+    print(f"Upserted {len(chunks)} vectors: {result}")
